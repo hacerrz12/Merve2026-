@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Merve • 2026</title>
+
+<style>
+:root{
+  --bg1:#12051f;
+  --bg2:#230a2f;
+  --text:#fff;
+  --muted:rgba(255,255,255,.78);
+
+  --glass:rgba(255,255,255,.12);
+  --border:rgba(255,255,255,.18);
+  --shadow:rgba(0,0,0,.55);
+
+  --pink:#ff5fa2;
+  --hotpink:#ff2d87;
+  --lilac:#c7a6ff;
+  --mint:#7fffd4;
+  --sun:#ffd36a;
+
+  --safeB: env(safe-area-inset-bottom, 0px);
+  --safeT: env(safe-area-inset-top, 0px);
+}
+
+*{ box-sizing:border-box; }
+html,body{ width:100%; height:100%; margin:0; }
+body{
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--text);
+
+  background:
+    radial-gradient(900px 600px at 20% 10%, rgba(255,95,162,.35), transparent 60%),
+    radial-gradient(900px 600px at 80% 18%, rgba(199,166,255,.30), transparent 60%),
+    radial-gradient(900px 600px at 60% 80%, rgba(127,255,212,.14), transparent 60%),
+    linear-gradient(135deg,var(--bg1),var(--bg2));
+  overflow:hidden;
+
+  padding-top: var(--safeT);
+  padding-bottom: var(--safeB);
+}
+
+/* background canvases */
+canvas{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+}
+
+/* floating stickers */
+.stickerLayer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:2;
+  opacity:.95;
+}
+.sticker{
+  position:absolute;
+  font-size: 22px;
+  filter: drop-shadow(0 16px 30px rgba(0,0,0,.45));
+  opacity:.9;
+  transform: rotate(var(--rot));
+  animation: stickerFloat 7s ease-in-out infinite;
+}
+@keyframes stickerFloat{
+  0%,100%{ transform: translateY(0) rotate(var(--rot)); }
+  50%{ transform: translateY(-10px) rotate(calc(var(--rot) + 2deg)); }
+}
+
+/* panels */
+.panel{
+  position:fixed; inset:0;
+  display:grid; place-items:center;
+  padding: 14px;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .35s ease;
+  z-index:5;
+}
+.panel.show{ opacity:1; pointer-events:auto; }
+
+/* neon heart backdrop */
+.heartWrap{
+  position:fixed;
+  inset:0;
+  display:grid;
+  place-items:center;
+  z-index:1;
+  opacity:.55;
+  pointer-events:none;
+}
+.heartWrap svg{
+  width:min(880px, 96vw);
+  filter: drop-shadow(0 28px 90px rgba(0,0,0,.62));
+}
+.heartGlow{
+  fill:none;
+  stroke: rgba(255,95,162,.30);
+  stroke-width: 14;
+  filter: blur(1px);
+}
+.heartLine{
+  fill:none;
+  stroke: rgba(255,255,255,.90);
+  stroke-width:2.2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.heartLine.l2{ opacity:.55; }
+.heartLine.l3{ opacity:.35; }
+
+/* cute corner year */
+.year{
+  position:fixed;
+  right: 16px;
+  bottom: calc(12px + var(--safeB));
+  z-index:3;
+  font-size: clamp(46px, 8vw, 92px);
+  font-weight: 1000;
+  letter-spacing:.5px;
+  opacity:.90;
+  text-shadow: 0 0 22px rgba(255,255,255,.18);
+  user-select:none;
+  pointer-events:none;
+}
+
+/* card */
+.card{
+  width:min(780px,92vw);
+  background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.10));
+  border:1px solid var(--border);
+  border-radius:26px;
+  padding:26px 22px;
+  backdrop-filter: blur(12px);
+  box-shadow:0 28px 90px var(--shadow);
+  text-align:center;
+  z-index:6;
+  position:relative;
+  overflow:hidden;
+}
+
+/* subtle sparkle overlay inside card */
+.card::before{
+  content:"";
+  position:absolute; inset:-60px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,211,106,.10), transparent 42%),
+    radial-gradient(circle at 75% 30%, rgba(127,255,212,.08), transparent 45%),
+    radial-gradient(circle at 45% 75%, rgba(255,95,162,.10), transparent 46%);
+  filter: blur(2px);
+  pointer-events:none;
+}
+
+h1{
+  margin:0 0 10px;
+  font-size: clamp(20px, 4.6vw, 30px);
+  font-weight: 1000;
+  position:relative;
+}
+p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.6;
+  font-size: 15px;
+  position:relative;
+}
+
+.rowTop{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:8px;
+  position:relative;
+}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.18);
+  font-weight:1000;
+  font-size: 13px;
+}
+.badge .dot{
+  width:10px; height:10px; border-radius:999px;
+  background: linear-gradient(90deg, rgba(255,95,162,.9), rgba(199,166,255,.9));
+  box-shadow: 0 0 16px rgba(255,95,162,.35);
+}
+
+/* choices */
+.choices{
+  margin-top:22px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  position:relative;
+}
+button{
+  width:100%;
+  padding:14px 16px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.18);
+  background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.08));
+  color:#fff;
+  font-size:15px;
+  font-weight:1000;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition: transform .08s ease, filter .18s ease, border-color .18s ease;
+}
+button:hover{
+  filter: brightness(1.08);
+  border-color: rgba(255,255,255,.25);
+}
+button:active{ transform: translateY(1px); }
+
+.small{ margin-top:10px; font-size:12px; opacity:.78; position:relative; }
+
+/* screen 2 */
+.topPill{
+  display:inline-block;
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(0,0,0,.18);
+  font-weight:1000;
+  position:relative;
+}
+.centerRow{ display:grid; gap:12px; place-items:center; margin-top: 14px; position:relative; }
+
+.cuteIcon{
+  font-size:86px;
+  filter: drop-shadow(0 18px 40px rgba(0,0,0,.50));
+  user-select:none;
+}
+
+/* Gift button */
+.giftBtn{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 14px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.18);
+  background: linear-gradient(90deg, rgba(255,95,162,.18), rgba(199,166,255,.14));
+  cursor:pointer;
+  font-weight:1000;
+  user-select:none;
+  transition: transform .12s ease, filter .18s ease;
+}
+.giftBtn:hover{ filter: brightness(1.06); }
+.giftBtn:active{ transform: scale(.98); }
+.giftBtn.shake{ animation: shake .55s ease; }
+@keyframes shake{
+  0%,100%{ transform: translateX(0); }
+  20%{ transform: translateX(-4px) rotate(-1deg); }
+  40%{ transform: translateX(4px) rotate(1deg); }
+  60%{ transform: translateX(-3px); }
+  80%{ transform: translateX(3px); }
+}
+
+.messageBox{
+  margin-top:14px;
+  text-align:left;
+  white-space:pre-line;
+  line-height:1.75;
+  font-size:14.7px;
+  background:rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:18px;
+  padding:14px;
+  display:none;
+  position:relative;
+}
+.messageBox.show{
+  display:block;
+  animation: popIn .35s ease both;
+}
+@keyframes popIn{
+  from{ opacity:0; transform: translateY(8px); }
+  to{ opacity:1; transform: translateY(0); }
+}
+
+.finalBtnWrap{ margin-top:14px; display:none; position:relative; }
+.finalBtn{
+  background: linear-gradient(90deg, rgba(255,211,106,.22), rgba(127,255,212,.16));
+  border-color: rgba(255,255,255,.22);
+}
+.final{
+  margin-top:16px;
+  font-weight:1100;
+  font-size:18px;
+  display:none;
+  text-align:center;
+  position:relative;
+}
+
+/* floating quotes */
+.floatingLayer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:4; /* under card, above heart */
+}
+.floatQuote{
+  position:absolute;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background: linear-gradient(90deg, rgba(0,0,0,.22), rgba(0,0,0,.14));
+  color: rgba(255,255,255,.92);
+  font-weight:1000;
+  font-size: 13px;
+  white-space: nowrap;
+  opacity:0;
+  transform: translateY(12px) scale(.98);
+  animation: floatUp 6.2s ease-in forwards;
+  filter: drop-shadow(0 18px 44px rgba(0,0,0,.55));
+}
+@keyframes floatUp{
+  0%{ opacity:0; transform: translateY(20px) scale(.98); }
+  10%{ opacity:.98; }
+  100%{ opacity:0; transform: translateY(-150px) scale(1.02); }
+}
+
+/* reduce motion */
+@media (prefers-reduced-motion: reduce){
+  .sticker, .floatQuote{ animation: none !important; }
+}
+
+/* mobile */
+@media(max-width:420px){
+  .cuteIcon{ font-size:78px; }
+  .messageBox{ font-size:14px; }
+  .floatQuote{ font-size:12px; }
+}
+</style>
+</head>
+
+<body>
+<!-- confetti hearts -->
+<canvas id="confetti"></canvas>
+<!-- soft sparkles -->
+<canvas id="sparkle"></canvas>
+
+<div class="stickerLayer" aria-hidden="true" id="stickers"></div>
+
+<div class="heartWrap" aria-hidden="true">
+  <svg viewBox="0 0 1200 700">
+    <path class="heartGlow" d="M600 610
+      C 290 480, 160 340, 230 230
+      C 290 110, 470 120, 600 240
+      C 730 120, 910 110, 970 230
+      C 1040 340, 910 480, 600 610" />
+    <path class="heartLine" d="M600 610
+      C 290 480, 160 340, 230 230
+      C 290 110, 470 120, 600 240
+      C 730 120, 910 110, 970 230
+      C 1040 340, 910 480, 600 610" />
+    <path class="heartLine l2" d="M600 590
+      C 310 470, 190 340, 250 240
+      C 305 135, 470 145, 600 265
+      C 730 145, 895 135, 950 240
+      C 1010 340, 890 470, 600 590" />
+    <path class="heartLine l3" d="M600 565
+      C 340 455, 220 340, 280 255
+      C 335 170, 470 175, 600 295
+      C 730 175, 865 170, 920 255
+      C 980 340, 860 455, 600 565" />
+  </svg>
+</div>
+
+<div class="year">2026</div>
+<div class="floatingLayer" id="floatingLayer"></div>
+
+<!-- SCREEN 1 -->
+<div class="panel show" id="screen1">
+  <div class="card">
+    <div class="rowTop">
+      <div class="badge"><span class="dot"></span> Merve & 2026 • mini sürpriz</div>
+    </div>
+
+    <h1>Merve, yeni yıla nasıl girmek istersin? 💖</h1>
+    <p>İçinden geleni seç… sonra **çiçekli kalpli** bir hediye açacağız 🌸🎀</p>
+
+    <div class="choices">
+      <button data-choice="1">Huzurlu ve güzel ✨</button>
+      <button data-choice="2">Biraz heyecan, biraz sürpriz 🎁</button>
+      <button data-choice="3">Sadece iyi hissettiren şeyler 🤍</button>
+    </div>
+
+    <div class="small">2 tık. Biter. Etkisi kalır 💗</div>
+  </div>
+</div>
+
+<!-- SCREEN 2 -->
+<div class="panel" id="screen2">
+  <div class="card">
+    <div class="topPill" id="routeHint">Seçim: —</div>
+
+    <div class="centerRow">
+      <div class="cuteIcon" aria-hidden="true">🧸🌸</div>
+      <p id="s2text"><b>Hacer</b> Merve’ye minicik bir sürpriz bırakmış… kutuyu açar mısın? 💝</p>
+
+      <button class="giftBtn" id="openGift" type="button" aria-label="Hediyeyi aç">
+        <span style="font-size:24px">🎁</span>
+        <span>Hediyeyi aç</span>
+        <span style="font-size:18px">💞</span>
+      </button>
+    </div>
+
+    <div class="messageBox" id="msg"></div>
+
+    <div class="finalBtnWrap" id="finalBtnWrap">
+      <button class="finalBtn" id="finalBtn" type="button">Son bir şey daha… 🌷✨</button>
+    </div>
+
+    <div class="final" id="finalText">Merve… 2026’da kalbin hep böyle ışıl ışıl kalsın 💖🌸</div>
+
+    <div class="choices" style="margin-top:14px">
+      <button id="backBtn" type="button">Geri dön</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== stickers (flowers/hearts) ===== */
+const stickersLayer = document.getElementById("stickers");
+const STICKERS = ["🌸","🌷","💐","🌼","🦋","🎀","💖","💗","💞","✨"];
+function placeStickers(){
+  stickersLayer.innerHTML = "";
+  const n = window.matchMedia("(max-width:900px)").matches ? 10 : 16;
+  for(let i=0;i<n;i++){
+    const s = document.createElement("div");
+    s.className = "sticker";
+    s.textContent = STICKERS[Math.floor(Math.random()*STICKERS.length)];
+    const left = Math.random()*100;
+    const top = Math.random()*100;
+    const rot = (-10 + Math.random()*20).toFixed(2) + "deg";
+    s.style.left = left + "vw";
+    s.style.top = top + "vh";
+    s.style.setProperty("--rot", rot);
+    s.style.animationDelay = (Math.random()*2).toFixed(2) + "s";
+    s.style.fontSize = (18 + Math.random()*18).toFixed(0) + "px";
+    stickersLayer.appendChild(s);
+  }
+}
+placeStickers();
+window.addEventListener("resize", placeStickers);
+
+/* ===== confetti hearts canvas ===== */
+const c1 = document.getElementById("confetti");
+const x1 = c1.getContext("2d");
+let W,H,dpr;
+
+function resizeAll(){
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth;
+  H = window.innerHeight;
+
+  c1.width = Math.floor(W*dpr);
+  c1.height = Math.floor(H*dpr);
+  c1.style.width = W+"px";
+  c1.style.height = H+"px";
+  x1.setTransform(dpr,0,0,dpr,0,0);
+
+  c2.width = Math.floor(W*dpr);
+  c2.height = Math.floor(H*dpr);
+  c2.style.width = W+"px";
+  c2.style.height = H+"px";
+  x2.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener("resize", resizeAll);
+
+const isMobile = window.matchMedia("(max-width:900px)").matches;
+const COUNT = isMobile ? 85 : 160;
+
+const confetti = Array.from({length:COUNT}, ()=>({
+  x: Math.random()*W,
+  y: Math.random()*H,
+  s: 10 + Math.random()*14,
+  v: 0.6 + Math.random()*1.6,
+  w: 0.8 + Math.random()*1.2,
+  t: Math.random()*Math.PI*2,
+  kind: Math.random() < 0.55 ? "heart" : "spark",
+  rot: Math.random()*Math.PI*2
+}));
+
+function drawHeart(ctx, x, y, size, rot){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(rot);
+  ctx.scale(size/24, size/24);
+  ctx.beginPath();
+  ctx.moveTo(0, 6);
+  ctx.bezierCurveTo(0, 0, -10, 0, -10, 8);
+  ctx.bezierCurveTo(-10, 15, 0, 20, 0, 24);
+  ctx.bezierCurveTo(0, 20, 10, 15, 10, 8);
+  ctx.bezierCurveTo(10, 0, 0, 0, 0, 6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function animateConfetti(){
+  x1.clearRect(0,0,W,H);
+  for(const p of confetti){
+    p.t += 0.015;
+    p.y += p.v;
+    p.x += Math.sin(p.t)*p.w;
+    p.rot += 0.01;
+
+    if(p.y > H + 30){
+      p.y = -30;
+      p.x = Math.random()*W;
+    }
+
+    const alpha = 0.75;
+    if(p.kind === "heart"){
+      // soft pink/purple gradient illusion by alternating fill
+      x1.fillStyle = "rgba(255,95,162,"+alpha+")";
+      drawHeart(x1, p.x, p.y, p.s, p.rot);
+      x1.fillStyle = "rgba(199,166,255,"+(alpha*0.65)+")";
+      drawHeart(x1, p.x+2, p.y+1, p.s*0.88, -p.rot*0.7);
+    }else{
+      x1.fillStyle = "rgba(255,211,106,"+(alpha*0.75)+")";
+      x1.beginPath();
+      x1.arc(p.x, p.y, p.s*0.14, 0, Math.PI*2);
+      x1.fill();
+    }
+  }
+  requestAnimationFrame(animateConfetti);
+}
+
+/* ===== sparkle canvas ===== */
+const c2 = document.getElementById("sparkle");
+const x2 = c2.getContext("2d");
+const sparkles = Array.from({length: isMobile ? 28 : 44}, ()=>({
+  x: Math.random()*W,
+  y: Math.random()*H,
+  r: 0.6 + Math.random()*1.8,
+  a: 0.25 + Math.random()*0.6,
+  sp: 0.004 + Math.random()*0.012
+}));
+
+function animateSparkles(){
+  x2.clearRect(0,0,W,H);
+  for(const s of sparkles){
+    s.a += s.sp;
+    const a = 0.22 + Math.abs(Math.sin(s.a))*0.55;
+    x2.fillStyle = "rgba(255,255,255,"+a+")";
+    x2.beginPath();
+    x2.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    x2.fill();
+  }
+  requestAnimationFrame(animateSparkles);
+}
+
+resizeAll();
+animateConfetti();
+animateSparkles();
+
+/* ===== FLOW + MESSAGES ===== */
+const s1 = document.getElementById("screen1");
+const s2 = document.getElementById("screen2");
+const msgBox = document.getElementById("msg");
+const finalBtnWrap = document.getElementById("finalBtnWrap");
+const finalText = document.getElementById("finalText");
+const floatingLayer = document.getElementById("floatingLayer");
+const openGiftBtn = document.getElementById("openGift");
+
+function showScreen(id){
+  [s1,s2].forEach(el => el.classList.remove("show"));
+  document.getElementById(id).classList.add("show");
+}
+
+const MESSAGES = {
+  1: `Merve 💖
+
+2025 biterken içimde tek bir şey var:  
+Senin gülüşün hep aynı sıcaklıkta kalsın.
+
+2026 sana huzur, şans ve “iyi ki” dedirten anlar getirsin 🌸✨
+
+Mutlu yıllar — Hacer`,
+  2: `Merveee 🎀
+
+2026 için plan:  
+Biraz heyecan, biraz sürpriz, bolca kahkaha 😌💞
+
+Sana “iyi gelen” ne varsa,
+bu yıl çoğalsın… hem de katlanarak 💐✨
+
+Mutlu yıllar — Hacer`,
+  3: `Merve 🤍
+
+Yeni yılda sadece iyi hissettiren şeyler:
+Tatlı haberler, güzel insanlar, yumuşacık günler…
+
+Ve kalbini yoran ne varsa,
+bu yıl senden uzak dursun 🌷🦋
+
+Mutlu yıllar — Hacer`
+};
+
+const HINTS = {
+  1: "Seçim: Huzurlu ve güzel ✨",
+  2: "Seçim: Biraz heyecan, biraz sürpriz 🎁",
+  3: "Seçim: Sadece iyi hissettiren şeyler 🤍"
+};
+
+const QUOTES = [
+  "TR: Bugün minik bir adım, yarın kocaman bir gülüş 💖",
+  "TR: İyi gelen şeyleri çoğalt 🌸",
+  "TR: 2026 tatlı geçsin 🎀",
+  "TR: Kendine nazik ol 🧸",
+  "EN: Sparkle a little more ✨",
+  "EN: Soft days, strong heart 💗",
+  "DE: Du schaffst das! 💞",
+  "DE: Schritt für Schritt 🌷"
+];
+
+let chosen = 1;
+let giftOpened = false;
+let finalLaunched = false;
+let quoteTimer = null;
+
+function resetScreen2(){
+  giftOpened = false;
+  finalLaunched = false;
+  msgBox.classList.remove("show");
+  finalBtnWrap.style.display = "none";
+  finalText.style.display = "none";
+  floatingLayer.innerHTML = "";
+
+  if(quoteTimer){
+    clearInterval(quoteTimer);
+    quoteTimer = null;
+  }
+}
+
+document.querySelectorAll('button[data-choice]').forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    chosen = Number(btn.dataset.choice);
+    document.getElementById("routeHint").textContent = HINTS[chosen] || "Seçim: —";
+
+    resetScreen2();
+    msgBox.textContent = MESSAGES[chosen];
+
+    const s2text = document.getElementById("s2text");
+    if(chosen === 1){
+      s2text.innerHTML = "<b>Hacer</b> Merve’ye minicik bir sürpriz bırakmış…<br>2026 yumuşacık başlasın 💗🌸";
+    }else if(chosen === 2){
+      s2text.innerHTML = "<b>Hacer</b> Merve’ye minicik bir sürpriz bırakmış…<br>Biraz heyecan? Tam zamanı 🎁🎀";
+    }else{
+      s2text.innerHTML = "<b>Hacer</b> Merve’ye minicik bir sürpriz bırakmış…<br>Sadece iyi hissettiren şeyler 💞🦋";
+    }
+
+    showScreen("screen2");
+    openGiftBtn.focus();
+  });
+});
+
+openGiftBtn.addEventListener("click", ()=>{
+  if(giftOpened) return;
+  giftOpened = true;
+
+  openGiftBtn.classList.remove("shake");
+  void openGiftBtn.offsetWidth; // restart animation
+  openGiftBtn.classList.add("shake");
+
+  msgBox.classList.add("show");
+  finalBtnWrap.style.display = "block";
+});
+
+function spawnQuote(text){
+  const el = document.createElement("div");
+  el.className = "floatQuote";
+  el.textContent = text;
+
+  const pad = 14;
+  const left = pad + Math.random() * (window.innerWidth - pad*2);
+  const top  = window.innerHeight - (90 + Math.random()*150);
+
+  el.style.left = Math.min(left, window.innerWidth - 160) + "px";
+  el.style.top  = top + "px";
+
+  floatingLayer.appendChild(el);
+  setTimeout(()=> el.remove(), 6500);
+}
+
+function startQuoteRain(){
+  let i = 0;
+  const rounds = 18;
+  quoteTimer = setInterval(()=>{
+    const q = QUOTES[Math.floor(Math.random()*QUOTES.length)];
+    spawnQuote(q);
+    i++;
+    if(i >= rounds){
+      clearInterval(quoteTimer);
+      quoteTimer = null;
+    }
+  }, 320);
+}
+
+document.getElementById("finalBtn").addEventListener("click", ()=>{
+  if(finalLaunched) return;
+  finalLaunched = true;
+  finalText.style.display = "block";
+  startQuoteRain();
+});
+
+document.getElementById("backBtn").addEventListener("click", ()=>{
+  resetScreen2();
+  showScreen("screen1");
+});
+</script>
+</body>
+</html>
